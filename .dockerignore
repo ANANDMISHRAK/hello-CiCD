@@ -1,0 +1,12 @@
+# Exclude compiled output because Docker will build a fresh JAR inside the build stage.
+target
+# Avoid copying local Git history into the image build context.
+.git
+# CI workflow files are not needed to run the application.
+.github
+# IDE metadata is not part of the application runtime.
+.idea
+.vscode
+*.iml
+# Documentation is not required to build the container image.
+README.md

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Declares this file as XML using UTF-8 text encoding. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- Maven's project element is the root of the build configuration. -->
+    <modelVersion>4.0.0</modelVersion>
+    <!-- Selects the POM model format understood by Maven. -->
+
+    <groupId>com.example</groupId>
+    <!-- Identifies the organization or group that owns this project. -->
+    <artifactId>hello-cicd</artifactId>
+    <!-- Names this application artifact; it is used in the generated JAR name. -->
+    <version>0.0.1-SNAPSHOT</version>
+    <!-- SNAPSHOT marks this as a development version rather than a final release. -->
+    <name>hello-cicd</name>
+    <!-- Human-readable project name shown by tools. -->
+    <description>Spring Boot sample project for learning CI/CD with GitHub Actions</description>
+    <!-- Documents the purpose of this sample project. -->
+
+    <parent>
+        <!-- Inherit common Spring Boot dependency and plugin defaults instead of managing every version ourselves. -->
+        <groupId>org.springframework.boot</groupId>
+        <!-- Identifies the Spring Boot parent project. -->
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- Parent provides dependency management and useful Maven defaults. -->
+        <version>3.5.6</version>
+        <!-- Chooses the Spring Boot parent version for this sample. -->
+        <relativePath/>
+        <!-- Tells Maven to resolve the parent from repositories rather than a local relative POM. -->
+    </parent>
+
+    <properties>
+        <!-- Central place for versions and build settings so they can be changed consistently. -->
+        <java.version>17</java.version>
+        <!-- Tells Spring Boot and its build plugins that this project targets Java 17. -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <!-- Compiles against the Java 17 language/API level. -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Keeps source-file text encoding predictable across machines. -->
+        <jacoco.version>0.8.13</jacoco.version>
+        <!-- Version of JaCoCo, the code coverage tool. -->
+        <archunit.version>1.4.1</archunit.version>
+        <!-- Version of ArchUnit, used to test architecture rules. -->
+        <pmd.version>3.27.0</pmd.version>
+        <!-- Version of the Maven PMD plugin. -->
+        <checkstyle.version>3.6.0</checkstyle.version>
+        <!-- Version of the Maven Checkstyle plugin. -->
+        <dependency-check.version>12.1.0</dependency-check.version>
+        <!-- Version of OWASP Dependency-Check. -->
+        <sonar.maven.plugin.version>5.3.0.6276</sonar.maven.plugin.version>
+        <!-- Version of the SonarQube Maven scanner; scanner runs only when invoked. -->
+    </properties>
+
+    <dependencies>
+        <!-- Application and test libraries used by this project. -->
+        <dependency>
+            <!-- Spring MVC support for REST endpoints and embedded web server integration. -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!-- Provides @RestController, @GetMapping and web application infrastructure. -->
+        </dependency>
+        <dependency>
+            <!-- Standard Spring Boot testing bundle: JUnit, Spring Test, Mockito and related utilities. -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <!-- Test scope means this dependency is used for tests, not packaged as application runtime code. -->
+        </dependency>
+        <dependency>
+            <!-- Architecture testing library for rules about packages and class dependencies. -->
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${archunit.version}</version>
+            <!-- Reads the version from the property above to avoid duplicating the number. -->
+            <scope>test</scope>
+            <!-- Architecture tests are development checks and are not needed by the running app. -->
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- Build plugins add tasks to Maven's lifecycle. -->
+        <plugins>
+            <plugin>
+                <!-- Packages the app as an executable Spring Boot JAR. -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <!-- Measures which application lines are exercised by tests. -->
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <!-- Adds the JaCoCo Java agent before tests start. -->
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <!-- Creates an HTML/XML coverage report after tests. -->
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <!-- Checks coverage and can fail the build if it is below the threshold. -->
+                        <id>coverage-check</id>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <!-- Defines one coverage rule for the whole compiled application bundle. -->
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <!-- Measure line coverage rather than branches or methods. -->
+                                            <counter>LINE</counter>
+                                            <!-- Use the fraction of lines covered by tests. -->
+                                            <value>COVEREDRATIO</value>
+                                            <!-- Require at least 50% line coverage in this learning project. -->
+                                            <minimum>0.50</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Runs PMD rules that look for common code-quality problems. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${pmd.version}</version>
+                <configuration>
+                    <!-- Prints violations so a developer can understand why a build failed. -->
+                    <printFailingErrors>true</printFailingErrors>
+                    <!-- Makes configured PMD violations fail the check rather than only warn. -->
+                    <failOnViolation>true</failOnViolation>
+                    <rulesets>
+                        <!-- Checks common Java best-practice rules. -->
+                        <ruleset>category/java/bestpractices.xml</ruleset>
+                        <!-- Checks likely programming errors. -->
+                        <ruleset>category/java/errorprone.xml</ruleset>
+                    </rulesets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- Attaches PMD's check to Maven's verify phase. -->
+                        <id>pmd-check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Checks Java source code against style rules. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <configuration>
+                    <!-- Loads the rule set stored in this repository. -->
+                    <configLocation>config/checkstyle/checkstyle.xml</configLocation>
+                    <!-- Prints violations directly in the build log. -->
+                    <consoleOutput>true</consoleOutput>
+                    <!-- Treats plugin execution errors as build failures. -->
+                    <failsOnError>true</failsOnError>
+                    <!-- Fails the build when configured style violations are found. -->
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- Runs Checkstyle as part of Maven's verify phase. -->
+                        <id>checkstyle-check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Scans third-party libraries for publicly known vulnerabilities. -->
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency-check.version}</version>
+                <configuration>
+                    <!-- Sets the initial vulnerability severity threshold for failing the scan. -->
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <!-- Produces human-readable HTML and machine-readable JSON reports. -->
+                    <formats>
+                        <format>HTML</format>
+                        <format>JSON</format>
+                    </formats>
+                    <!-- Skips test-only dependencies to focus this starter's gate on runtime dependencies. -->
+                    <skipTestScope>true</skipTestScope>
+                </configuration>
+                <!-- This plugin is invoked explicitly in CI; it is not attached to every Maven build phase. -->
+            </plugin>
+            <plugin>
+                <!-- Sends analysis from Maven to a running SonarQube server when explicitly requested. -->
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar.maven.plugin.version}</version>
+                <!-- Configure the server URL and token at invocation time; never hard-code secrets here. -->
+            </plugin>
+        </plugins>
+    </build>
+</project>

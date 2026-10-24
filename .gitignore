@@ -1,0 +1,16 @@
+# Maven build output is generated and should not be committed.
+target/
+# IntelliJ project settings are machine/user-specific.
+.idea/
+# VS Code settings can vary by developer.
+.vscode/
+# IntelliJ module files are generated locally.
+*.iml
+# macOS Finder metadata is not application source.
+.DS_Store
+# Environment files may contain local configuration or secrets; never commit them.
+.env
+# Log files are generated at runtime.
+*.log
+# Optional local OWASP vulnerability database/cache directory.
+dependency-check-data/
